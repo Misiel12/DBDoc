@@ -34,10 +34,10 @@ import ntpath
 from mforms import FileChooser
 import mforms
 
-ModuleInfo = DefineModule(name="Drake DBDocPy2", author="Fernando Leal", version="1.0", description="Data Dictionary")
+ModuleInfo = DefineModule(name="Drake DBDocPy2.1", author="Fernando Leal", version="1.0", description="Data Dictionary")
 
 
-@ModuleInfo.plugin("drake.DBDocPy2.htmlDataDictionary", caption="DBDoc: As HTML File",
+@ModuleInfo.plugin("drake.DBDocPy2.htmlDataDictionary2", caption="DBDoc: As HTML File 2",
                    description="Data Dictionary as HTML", input=[wbinputs.currentDiagram()], pluginMenu="Utilities")
 @ModuleInfo.export(grt.INT, grt.classes.db_Catalog)
 def htmlDataDictionary(diagram):
@@ -61,34 +61,15 @@ def htmlDataDictionary(diagram):
     print >> htmlFile, "<html><head>"
     print >> htmlFile, "<title>Data dictionary: %s</title>" % (path_leaf(htmlOut))
 
-    print >> htmlFile, """<style>
-    td,th {
-      text-align:center;
-      vertical-align:middle;
-    }
-    table {
-      border-collapse: collapse;
-    }
-    caption, th, td {
-      padding: .2em .8em;
-      border: 1px solid #fff;
-    }
-    caption {
-      background: #dbb768;
-      font-weight: bold;
-      font-size: 1.1em;
-    }
-    th {
-      font-weight: bold;
-      background: #f3ce7d;
-    }
-    td {
-      background: #ffea97;
-    }
-    </style>
+    print >> htmlFile, """<link rel="stylesheet" href="../css/bootstrap.css">
+    <script src="../js/bootstrap.js"></script>
+    <script src="../js/npm.js"></script>
+    <script src="../js/tablas.js"></script>
     </head>
     <body>"""
     print >> htmlFile, "<img src='%s.png'>" % (path_leaf(htmlOut))
+
+    print >> htmlFile, "</body></html>"
 
     print >> htmlFile, "%s" % (tables)
 
@@ -98,21 +79,23 @@ def htmlDataDictionary(diagram):
 
 def writeTableDoc(table):
         htmlFile = ''
-        htmlFile += "<table><caption>Table: %s - %s</caption>" % (table.name, table.comment)
+
+        htmlFile +="<div class='panel panel-primary'> <div class='panel-heading'><h3 class='panel-title'> %s </h3><span class='pull-right clickable'><i class='glyphicon glyphicon-chevron-up'></i></span></div>" % (table.name)
+        htmlFile += "<div class='panel-body'><table class='table table-striped bordered table-condensed table-hover'><caption>Tabla: %s - %s</caption>" % (table.name, table.comment)
         htmlFile += """<tr><td colspan=\"7\">Attributes</td></tr>
         <tr>
-        <th>Name</th>
-        <th>Type</th>
+        <th>Nombre</th>
+        <th>Tipo</th>
         <th>Not Null</th>
         <th>PK</th>
         <th>FK</th>
         <th>Default</th>
-        <th>Comment</th>
+        <th>Comentario</th>
         </tr>"""
         for column in table.columns:
-            pk = ('No', 'Yes')[bool(table.isPrimaryKeyColumn(column))]
-            fk = ('No', 'Yes')[bool(table.isForeignKeyColumn(column))]
-            nn = ('No', 'Yes')[bool(column.isNotNull)]
+            pk = ('No', 'Si')[bool(table.isPrimaryKeyColumn(column))]
+            fk = ('No', 'Si')[bool(table.isForeignKeyColumn(column))]
+            nn = ('No', 'Si')[bool(column.isNotNull)]
             htmlFile += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (
             column.name, column.formattedType, nn, pk, fk, column.defaultValue, column.comment)
 
@@ -122,17 +105,17 @@ def writeTableDoc(table):
                 htmlFile += "<table><caption>Index: %s</caption>" % (index.name)
                 htmlFile += """<tr><td colspan=\"4\">Attributes</td></tr>
                 <tr>
-                <th>Name</th>
-                <th>Columns</th>
-                <th>Type</th>
-                <th>Description</th>
+                <th>Nombre</th>
+                <th>Columnas</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
                 </tr>
                 """
                 htmlFile += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (
                 index.name, map(lambda x: "`" + x.referencedColumn.name + "`", index.columns),index.indexType, index.comment)
                 htmlFile += "</table></br>"
 
-        htmlFile += "</table></br>"
+        htmlFile += "</table></div></div></br>"
         return htmlFile
 
 def path_leaf(path):
